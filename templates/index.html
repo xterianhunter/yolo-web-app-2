@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YOLOv11 Real-Time Detection</title>
+    <style>
+        /* General Page Styling */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            text-align: center;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 800px;
+        }
+
+        h2 {
+            color: #2c3e50;
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+
+        p {
+            color: #7f8c8d;
+        }
+
+        /* Flash Message Styling */
+        .flash {
+            background-color: #27ae60;
+            color: #fff;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+
+        /* Form and Button Styling */
+        form {
+            margin: 20px 0;
+        }
+
+        button {
+            padding: 12px 24px;
+            font-size: 1rem;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            margin: 10px;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #startBtn {
+            background-color: #2ecc71;
+            color: #fff;
+        }
+
+        #startBtn:disabled {
+            background-color: #bdc3c7;
+        }
+
+        #stopBtn {
+            background-color: #e74c3c;
+            color: #fff;
+        }
+
+        #stopBtn:disabled {
+            background-color: #bdc3c7;
+        }
+
+        /* Video Feed Styling */
+        .video-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        img {
+            border: 3px solid #2ecc71;
+            border-radius: 10px;
+        }
+
+        /* Image upload styling */
+        .upload-container {
+            margin-top: 30px;
+            border: 1px solid #2ecc71;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .upload-container input[type="file"] {
+            padding: 10px;
+        }
+
+        .upload-container button {
+            background-color: #3498db;
+            color: #fff;
+            padding: 12px 24px;
+            font-size: 1rem;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+
+        /* Flash message for errors */
+        .error {
+            background-color: #e74c3c;
+            color: #fff;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                width: 90%;
+                padding: 20px;
+            }
+
+            button {
+                width: 100%;
+                padding: 15px;
+            }
+
+            img {
+                max-width: 100%;
+                height: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>YOLOv11 Real-Time Object Detection</h2>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="flash">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="post" action="/start-realtime" style="display:inline;">
+            <button type="submit" id="startBtn" {% if detecting %}disabled{% endif %}>Start Real-Time Detection</button>
+        </form>
+
+        <form method="post" action="/stop-realtime" style="display:inline;">
+            <button type="submit" id="stopBtn" {% if not detecting %}disabled{% endif %}>Stop Detection</button>
+        </form>
+
+        {% if detecting %}
+        <div class="video-container">
+            <h3>Live Stream of Object Detection</h3>
+            <img src="{{ url_for('video_feed') }}" width="640" height="480" alt="Live Stream">
+        </div>
+        {% endif %}
+
+        <div class="upload-container">
+            <h3>Upload an Image for Detection</h3>
+            <form method="POST" action="/upload-image" enctype="multipart/form-data">
+                <input type="file" name="image" accept="image/*" required>
+                <button type="submit">Upload Image</button>
+            </form>
+        </div>
+
+        {% if uploaded_image %}
+        <div class="video-container">
+            <h3>Detection Results</h3>
+            <img src="{{ url_for('static', filename='uploads/' + uploaded_image) }}" width="640" height="480" alt="Detected Image">
+        </div>
+        {% endif %}
+
+        <p>Saved frames are available in <code>/static/frames</code></p>
+    </div>
+
+</body>
+</html>
